@@ -1,0 +1,9 @@
+name: climb-comp
+services:
+  web:
+    project: .
+    host: containerapp
+    language: js
+    docker:
+      path: ./Dockerfile
+      remoteBuild: true

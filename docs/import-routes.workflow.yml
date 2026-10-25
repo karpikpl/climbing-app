@@ -1,0 +1,32 @@
+name: Import routes (Copilot agent)
+
+# After merge, opens an issue assigned to the Copilot cloud agent to import the real
+# routes from https://usac.results.info/event/647. Skipped once routes are imported.
+# Requires: allow `usac.results.info` in Settings > Copilot > Cloud agent firewall,
+# and a repo secret COPILOT_ASSIGN_TOKEN (PAT that can create issues and assign Copilot).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  issues: read
+  contents: read
+
+jobs:
+  request-import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open import issue for Copilot
+        env:
+          GH_TOKEN: ${{ secrets.COPILOT_ASSIGN_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "COPILOT_ASSIGN_TOKEN not set"; exit 1; fi
+          if [ -f data/ROUTES_IMPORTED ]; then echo "Routes already imported"; exit 0; fi
+          existing=$(gh issue list --label route-import --state open --json number --jq length)
+          if [ "$existing" != "0" ]; then echo "Import issue already open"; exit 0; fi
+          gh label create route-import --force >/dev/null
+          gh issue create --label route-import --assignee "@copilot" \
+            --title "Import real routes from USAC event 647" \
+            --body-file .github/route-import-task.md
