@@ -1,0 +1,194 @@
+[
+  {
+    "id": "r1",
+    "number": 1,
+    "category": "U11",
+    "name": "U11 Red"
+  },
+  {
+    "id": "r2",
+    "number": 2,
+    "category": "U11",
+    "name": "U11 Blue"
+  },
+  {
+    "id": "r3",
+    "number": 3,
+    "category": "U11",
+    "name": "U11 Green"
+  },
+  {
+    "id": "r4",
+    "number": 4,
+    "category": "U11",
+    "name": "U11 Yellow"
+  },
+  {
+    "id": "r5",
+    "number": 5,
+    "category": "U11",
+    "name": "U11 Purple"
+  },
+  {
+    "id": "r6",
+    "number": 6,
+    "category": "U11",
+    "name": "U11 Orange"
+  },
+  {
+    "id": "r7",
+    "number": 7,
+    "category": "U13",
+    "name": "U13 Red"
+  },
+  {
+    "id": "r8",
+    "number": 8,
+    "category": "U13",
+    "name": "U13 Blue"
+  },
+  {
+    "id": "r9",
+    "number": 9,
+    "category": "U13",
+    "name": "U13 Green"
+  },
+  {
+    "id": "r10",
+    "number": 10,
+    "category": "U13",
+    "name": "U13 Yellow"
+  },
+  {
+    "id": "r11",
+    "number": 11,
+    "category": "U13",
+    "name": "U13 Purple"
+  },
+  {
+    "id": "r12",
+    "number": 12,
+    "category": "U13",
+    "name": "U13 Orange"
+  },
+  {
+    "id": "r13",
+    "number": 13,
+    "category": "U15",
+    "name": "U15 Red"
+  },
+  {
+    "id": "r14",
+    "number": 14,
+    "category": "U15",
+    "name": "U15 Blue"
+  },
+  {
+    "id": "r15",
+    "number": 15,
+    "category": "U15",
+    "name": "U15 Green"
+  },
+  {
+    "id": "r16",
+    "number": 16,
+    "category": "U15",
+    "name": "U15 Yellow"
+  },
+  {
+    "id": "r17",
+    "number": 17,
+    "category": "U15",
+    "name": "U15 Purple"
+  },
+  {
+    "id": "r18",
+    "number": 18,
+    "category": "U15",
+    "name": "U15 Orange"
+  },
+  {
+    "id": "r19",
+    "number": 19,
+    "category": "U17",
+    "name": "U17 Red"
+  },
+  {
+    "id": "r20",
+    "number": 20,
+    "category": "U17",
+    "name": "U17 Blue"
+  },
+  {
+    "id": "r21",
+    "number": 21,
+    "category": "U17",
+    "name": "U17 Green"
+  },
+  {
+    "id": "r22",
+    "number": 22,
+    "category": "U17",
+    "name": "U17 Yellow"
+  },
+  {
+    "id": "r23",
+    "number": 23,
+    "category": "U17",
+    "name": "U17 Purple"
+  },
+  {
+    "id": "r24",
+    "number": 24,
+    "category": "U17",
+    "name": "U17 Orange"
+  },
+  {
+    "id": "r25",
+    "number": 25,
+    "category": "OPEN",
+    "name": "OPEN Red"
+  },
+  {
+    "id": "r26",
+    "number": 26,
+    "category": "OPEN",
+    "name": "OPEN Blue"
+  },
+  {
+    "id": "r27",
+    "number": 27,
+    "category": "OPEN",
+    "name": "OPEN Green"
+  },
+  {
+    "id": "r28",
+    "number": 28,
+    "category": "OPEN",
+    "name": "OPEN Yellow"
+  },
+  {
+    "id": "r29",
+    "number": 29,
+    "category": "OPEN",
+    "name": "OPEN Purple"
+  },
+  {
+    "id": "r30",
+    "number": 30,
+    "category": "OPEN",
+    "name": "OPEN Orange"
+  },
+  {
+    "id": "r31",
+    "number": 31,
+    "category": "OPEN",
+    "name": "OPEN Pink"
+  },
+  {
+    "id": "r32",
+    "number": 32,
+    "category": "OPEN",
+    "name": "OPEN Black"
+  }
+]

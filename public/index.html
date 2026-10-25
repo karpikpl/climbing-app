@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Climb Comp</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2433;--mute:#6b7385;--line:#e6e8ee;--accent:#4f46e5;--ok:#16a34a;--warn:#f59e0b}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.bar{max-width:760px;margin:auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.logo{font-weight:700;font-size:18px;flex:1}
+.pill{background:#eef0ff;color:var(--accent);border-radius:99px;padding:4px 12px;font-weight:600;font-size:13px}
+.pill.low{background:#fff4dd;color:#b45309}
+nav{max-width:760px;margin:auto;display:flex;gap:4px;padding:0 12px}
+nav button{flex:1;background:none;border:0;padding:10px;font:inherit;color:var(--mute);border-bottom:2px solid transparent;cursor:pointer}
+nav button.on{color:var(--accent);border-color:var(--accent);font-weight:600}
+main{max-width:760px;margin:auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+h2{font-size:15px;margin:18px 0 8px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em}
+button.b{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 12px;font:inherit;cursor:pointer}
+button.b:hover{border-color:var(--accent)}button.b:disabled{opacity:.4;cursor:default}
+button.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+button.top{background:var(--ok);color:#fff;border-color:var(--ok)}
+input{font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:10px;min-width:0}
+.row{display:flex;align-items:center;gap:10px}.grow{flex:1}.mute{color:var(--mute);font-size:13px}
+.route{display:flex;flex-direction:column;gap:8px}
+.num{width:34px;height:34px;border-radius:10px;background:#eef0ff;color:var(--accent);display:grid;place-items:center;font-weight:700}
+.val{font-weight:700;font-size:18px}
+.cat{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--bg);border:1px solid var(--line);color:var(--mute)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.done{border-color:#bbf7d0;background:#f0fdf4}
+.lb .r{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.lb .r:last-child{border:0}.lb .me{background:#f5f6ff;margin:0 -8px;padding:9px 8px;border-radius:8px}
+.rk{width:26px;text-align:center;font-weight:700;color:var(--mute)}
+.av{width:28px;height:28px;border-radius:50%;background:#e5e7eb;object-fit:cover;display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--mute)}
+.tag{display:inline-block;padding:3px 10px;border-radius:99px;background:#eef0ff;color:var(--accent);margin:0 4px 4px 0;font-size:13px}
+.login{max-width:360px;margin:12vh auto;text-align:center}
+.err{color:#dc2626;margin-top:8px}
+select{font:inherit;padding:8px;border-radius:10px;border:1px solid var(--line);background:#fff}
+.bar-p{height:6px;background:var(--line);border-radius:9px;overflow:hidden}.bar-p>i{display:block;height:100%;background:var(--accent)}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let cfg, S, tab = 'routes', catFilter = 'all', lbScope = 'global', error = '';
+
+async function api(path, body) {
+  const r = await fetch('/api' + path, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.error || 'Error'); e.status = r.status; throw e; }
+  return j;
+}
+
+async function boot() {
+  cfg = await api('/config');
+  await refresh();
+}
+async function refresh() {
+  try { S = await api('/state'); error = ''; } catch (e) { if (e.status === 401) S = null; else error = e.message; }
+  render();
+}
+async function act(path, body) {
+  try { await api(path, body); } catch (e) { error = e.message; }
+  await refresh();
+}
+
+function renderLogin() {
+  $('#app').innerHTML = `<div class="login card"><h1>🧗 Climb Comp</h1>
+    <p class="mute">25 attempts. Choose your climbs wisely.</p>
+    <div id="g" style="display:flex;justify-content:center;margin:16px 0"></div>
+    ${cfg.usernameLogin ? `<form id="uf" class="row"><input class="grow" id="un" placeholder="Pick a username" maxlength="30"><button class="b pri">Go</button></form>` : ''}
+    <div class="err">${esc(error)}</div></div>`;
+  if (cfg.googleClientId) {
+    const init = () => {
+      if (!window.google?.accounts) return setTimeout(init, 200);
+      google.accounts.id.initialize({ client_id: cfg.googleClientId, callback: async (r) => { try { await api('/login/google', { credential: r.credential }); await refresh(); } catch (e) { error = e.message; render(); } } });
+      google.accounts.id.renderButton($('#g'), { theme: 'outline', size: 'large', shape: 'pill' });
+    };
+    init();
+  }
+  const f = $('#uf');
+  if (f) f.onsubmit = async (e) => { e.preventDefault(); try { await api('/login/username', { username: $('#un').value }); await refresh(); } catch (er) { error = er.message; render(); } };
+}
+
+function lb(list) {
+  if (!list.length) return '<div class="mute">No climbers yet.</div>';
+  return `<div class="lb">${list.map((c) => `<div class="r ${c.id === S.me.id ? 'me' : ''}">
+    <div class="rk">${c.rank <= 3 ? ['🥇', '🥈', '🥉'][c.rank - 1] : c.rank}</div>
+    ${c.picture ? `<img class="av" src="${esc(c.picture)}" referrerpolicy="no-referrer">` : `<div class="av">${esc(c.name[0]?.toUpperCase())}</div>`}
+    <div class="grow">${esc(c.name)}<div class="mute">${c.tops} tops${S.zones.length ? ` · ${c.zones} zones` : ''} · ${c.attemptsUsed} attempts</div></div>
+    <div class="val">${c.points}</div></div>`).join('')}</div>`;
+}
+
+function routesView() {
+  const cats = [...new Set(S.routes.map((r) => r.category))];
+  const list = S.routes.filter((r) => catFilter === 'all' || r.category === catFilter);
+  const left = S.me.attemptsLeft;
+  return `<div class="row" style="margin-bottom:12px"><select id="cf"><option value="all">All categories</option>${cats.map((c) => `<option ${c === catFilter ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+    <div class="grow"></div><button class="b" id="undo" ${S.me.attemptsUsed ? '' : 'disabled'}>↩ Undo last</button></div>
+    ${list.map((r) => {
+      const m = r.mine, top = m?.top;
+      const dis = left <= 0 || top ? 'disabled' : '';
+      return `<div class="card route ${top ? 'done' : ''}"><div class="row"><div class="num">${esc(r.number)}</div>
+        <div class="grow"><b>${esc(r.name || 'Route ' + r.number)}</b> <span class="cat">${esc(r.category)}</span>
+        <div class="mute">${r.stats.tops} tops · ${r.stats.climbers} tried · ${r.stats.attempts} attempts${S.zones.length ? ` · ${r.stats.low} zones` : ''}</div></div>
+        <div style="text-align:right"><div class="val">${r.value}</div><div class="mute">pts</div></div></div>
+        <div class="row"><div class="mute grow">${m ? (top ? `✅ Topped in ${m.topAttempts}` : `${m.attempts} attempts${m.high ? ' · high zone' : m.low ? ' · low zone' : ''}`) : 'Not attempted'}</div>
+        <div class="acts">
+          <button class="b" data-r="${r.id}" data-res="fail" ${dis}>+ Attempt</button>
+          ${S.zones.includes('low') ? `<button class="b" data-r="${r.id}" data-res="low" ${dis}>Low zone</button>` : ''}
+          ${S.zones.includes('high') ? `<button class="b" data-r="${r.id}" data-res="high" ${dis}>High zone</button>` : ''}
+          <button class="b top" data-r="${r.id}" data-res="top" ${dis}>Top</button></div></div></div>`;
+    }).join('')}`;
+}
+
+function ratingsView() {
+  const scopes = [['global', 'Global'], ...S.groups.filter((g) => g.joined).map((g) => [g.name, '#' + g.name])];
+  if (!scopes.some(([k]) => k === lbScope)) lbScope = 'global';
+  const list = lbScope === 'global' ? S.global : S.groups.find((g) => g.name === lbScope).leaderboard;
+  return `<div class="row" style="margin-bottom:12px;flex-wrap:wrap">${scopes.map(([k, l]) => `<button class="b ${k === lbScope ? 'pri' : ''}" data-scope="${esc(k)}">${esc(l)}</button>`).join('')}</div>
+    <div class="card">${lb(list)}</div>`;
+}
+
+function groupsView() {
+  const others = S.groups.filter((g) => !g.joined);
+  return `<h2>My groups</h2><div class="card">${S.me.groups.length ? S.me.groups.map((g) => `<span class="tag">#${esc(g)} <a href="#" data-leave="${esc(g)}" style="text-decoration:none">×</a></span>`).join('') : '<span class="mute">Not in any group yet.</span>'}</div>
+    <h2>Join or create</h2><form id="gf" class="row card"><input class="grow" id="gn" placeholder="Group name, e.g. my-gym" maxlength="24"><button class="b pri">Join</button></form>
+    ${others.length ? `<h2>Existing groups</h2><div class="card">${others.map((g) => `<span class="tag" style="cursor:pointer" data-join="${esc(g.name)}">#${esc(g.name)} · ${g.members}</span>`).join('')}</div>` : ''}`;
+}
+
+function adminView() {
+  return `<h2>Admin: routes JSON</h2><div class="card"><textarea id="rj" rows="10" style="width:100%;font:12px monospace">${esc(JSON.stringify(S.routes.map(({ id, number, category, name }) => ({ id, number, category, name })), null, 1))}</textarea>
+    <button class="b pri" id="rs" style="margin-top:8px">Save routes</button></div>`;
+}
+
+function render() {
+  if (!S) return renderLogin();
+  const tabs = [['routes', 'Routes'], ['ratings', 'Ratings'], ['groups', 'Groups'], ...(S.me.admin ? [['admin', 'Admin']] : [])];
+  const body = { routes: routesView, ratings: ratingsView, groups: groupsView, admin: adminView }[tab]();
+  $('#app').innerHTML = `<header><div class="bar"><div class="logo">🧗 Climb Comp</div>
+    <span class="pill ${S.me.attemptsLeft <= 5 ? 'low' : ''}">${S.me.attemptsLeft}/${S.maxAttempts} attempts</span>
+    <span class="pill">${S.me.points} pts</span><button class="b" id="lo">Log out</button></div>
+    <nav>${tabs.map(([k, l]) => `<button class="${k === tab ? 'on' : ''}" data-tab="${k}">${l}</button>`).join('')}</nav></header>
+    <main><div class="bar-p" style="margin-bottom:12px"><i style="width:${S.me.attemptsUsed / S.maxAttempts * 100}%"></i></div>
+    ${error ? `<div class="err">${esc(error)}</div>` : ''}${body}</main>`;
+  document.querySelectorAll('[data-tab]').forEach((b) => (b.onclick = () => { tab = b.dataset.tab; render(); }));
+  document.querySelectorAll('[data-res]').forEach((b) => (b.onclick = () => act('/log', { routeId: b.dataset.r, result: b.dataset.res })));
+  document.querySelectorAll('[data-scope]').forEach((b) => (b.onclick = () => { lbScope = b.dataset.scope; render(); }));
+  document.querySelectorAll('[data-join]').forEach((b) => (b.onclick = () => act('/groups/join', { name: b.dataset.join })));
+  document.querySelectorAll('[data-leave]').forEach((b) => (b.onclick = (e) => { e.preventDefault(); act('/groups/leave', { name: b.dataset.leave }); }));
+  $('#lo').onclick = async () => { await api('/logout', {}); S = null; render(); };
+  const u = $('#undo'); if (u) u.onclick = () => act('/undo', {});
+  const cf = $('#cf'); if (cf) cf.onchange = () => { catFilter = cf.value; render(); };
+  const gf = $('#gf'); if (gf) gf.onsubmit = (e) => { e.preventDefault(); act('/groups/join', { name: $('#gn').value }); };
+  const rs = $('#rs'); if (rs) rs.onclick = () => { try { act('/admin/routes', JSON.parse($('#rj').value)); } catch { error = 'Invalid JSON'; render(); } };
+}
+
+boot();
+setInterval(() => { if (S && !document.activeElement?.matches('input,textarea,select')) refresh(); }, 15000);
+</script>
+</body>
+</html>

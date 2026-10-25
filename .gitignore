@@ -1,0 +1,5 @@
+node_modules
+.azure
+data/db.json
+data/routes.json
+data/secret
